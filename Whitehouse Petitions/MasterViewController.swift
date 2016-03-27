@@ -11,8 +11,16 @@ import UIKit
 class MasterViewController: UITableViewController {
 
     var detailViewController: DetailViewController? = nil
+    // Holds the dictionaries that contain information about each petition.
     var objects = [[String: String]]()
-
+    
+    /*
+     * Function Name: viewDidLoad
+     * Parameters: None
+     * Purpose: This method tries to retrieve petitions from a government website. If the petitions
+     *   cannot be retrieved or if they cannot be parsed, then an error will be displayed.
+     * Return Value: None
+     */
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,10 +37,14 @@ class MasterViewController: UITableViewController {
         }
         
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0)) { [unowned self] in
+            // Checks if a valid URL is gotten.
             if let url = NSURL(string: urlString) {
+                // Checks if data was successfully retrieved.
                 if let data = try? NSData(contentsOfURL: url, options: []) {
+                    // Holds the data in JSON format.
                     let json = JSON(data: data)
                     
+                    // Checks if the data is parsable.
                     if json["metadata"]["responseInfo"]["status"].intValue == 200 {
                         self.parseJSON(json)
                     }
@@ -53,6 +65,14 @@ class MasterViewController: UITableViewController {
         }
     }
     
+    /*
+     * Function Name: parseJSON
+     * Parameters: json - data that is formatted in the JSON format.
+     * Purpose: This method takes each petition and puts the information in each petition into a dictionary.
+     *   Each dictionary is then stored into an array of petitions in dictionary format.
+     * Return Value: None
+     */
+    
     func parseJSON(json: JSON) {
         for result in json["results"].arrayValue {
             let title = result["title"].stringValue
@@ -66,6 +86,13 @@ class MasterViewController: UITableViewController {
             self.tableView.reloadData()
         }
     }
+    
+    /*
+     * Function Name: showError
+     * Parameters: None
+     * Purpose: This method brings up an alert view controller letting the user know that an error has occurred.
+     * Return Value: None
+     */
     
     func showError() {
         dispatch_async(dispatch_get_main_queue()) { [unowned self] in
@@ -110,6 +137,14 @@ class MasterViewController: UITableViewController {
         return objects.count
     }
 
+    /*
+     * Function Name: tableView
+     * Parameters: tableView - the table view that this method was called on.
+     *   indexPath - index path that locates a row in the table.
+     * Purpose: This method creates cells for a petition that contains the petition's title and body.
+     * Return Value: None
+     */
+    
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath)
 
